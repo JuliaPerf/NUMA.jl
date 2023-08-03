@@ -48,6 +48,20 @@ julia> which_numa_node(x)
 7
 ```
 
+We can also allocate on the local NUMA node, that is the node closest to the CPU-thread/core we're currently running on.
+
+```julia
+julia> using NUMA, ThreadPinning, Random
+
+julia> pinthread(32) # is associated with NUMA node 2
+true
+
+julia> x = Vector{Float64}(numalocal(), 10); rand!(x);
+
+julia> which_numa_node(x)
+2
+```
+
 ## Example: NUMA first-touch policy
 
 In the following example, parts of an array are (equally) distributed among all 8 NUMA domains.
