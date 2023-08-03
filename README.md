@@ -53,12 +53,9 @@ julia> which_numa_node(x)
 In the following example, parts of an array are (equally) distributed among all 8 NUMA domains.
 
 ```julia
-julia> using NUMA, ThreadPinning
+julia> using NUMA, ThreadPinning, Base.Threads
 
 julia> pinthreads(:cores)
-
-julia> x = Vector{Float64}(undef, 10^7);
-julia> using NUMA, ThreadPinning, Base.Threads
 
 julia> x = Vector{Float64}(undef, 10^7);
 
