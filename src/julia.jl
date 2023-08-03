@@ -6,7 +6,7 @@ current_numa_node() = numa_node_of_cpu(sched_getcpu())
 
 current_cpu() = sched_getcpu()
 
-nnodes() = numa_max_node()+1
+nnumanodes() = numa_max_node()+1
 
 ncpus() = numa_num_task_cpus()
 

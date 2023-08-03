@@ -41,7 +41,10 @@ We can also allocate on the local NUMA node, that is, the node closest to the CP
 ```julia
 julia> using NUMA, ThreadPinning, Random
 
-julia> pinthread(32); # is associated with NUMA node 2
+julia> numa_node_of_cpu(32)
+2
+
+julia> pinthread(32);
 
 julia> current_cpu()
 32
