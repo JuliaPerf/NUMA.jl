@@ -7,6 +7,9 @@ In the following example, we explicitly allocate arrays in specific NUMA nodes.
 ```julia
 julia> using NUMA, Random
 
+julia> nnumanodes()
+8
+
 julia> x = Vector{Float64}(numanode(0), 10); rand!(x);
 
 julia> which_numa_node(x)
@@ -17,25 +20,10 @@ julia> x = Vector{Float64}(numanode(1), 10); rand!(x);
 julia> which_numa_node(x)
 1
 
-julia> x = Vector{Float64}(numanode(2), 10); rand!(x);
-
-julia> which_numa_node(x)
-2
-
 julia> x = Vector{Float64}(numanode(3), 10); rand!(x);
 
 julia> which_numa_node(x)
 3
-
-julia> x = Vector{Float64}(numanode(4), 10); rand!(x);
-
-julia> which_numa_node(x)
-4
-
-julia> x = Vector{Float64}(numanode(5), 10); rand!(x);
-
-julia> which_numa_node(x)
-5
 
 julia> x = Vector{Float64}(numanode(6), 10); rand!(x);
 
@@ -48,13 +36,18 @@ julia> which_numa_node(x)
 7
 ```
 
-We can also allocate on the local NUMA node, that is the node closest to the CPU-thread/core we're currently running on.
+We can also allocate on the local NUMA node, that is, the node closest to the CPU-thread/core we're currently running on.
 
 ```julia
 julia> using NUMA, ThreadPinning, Random
 
-julia> pinthread(32) # is associated with NUMA node 2
-true
+julia> pinthread(32); # is associated with NUMA node 2
+
+julia> current_cpu()
+32
+
+julia> current_numa_node()
+2
 
 julia> x = Vector{Float64}(numalocal(), 10); rand!(x);
 
