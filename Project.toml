@@ -1,0 +1,13 @@
+name = "NUMA"
+uuid = "292f1341-b53f-425a-80e5-3597ad0961bf"
+authors = ["Carsten Bauer <carsten.bauer@uni-paderborn.de>"]
+version = "0.1.0"
+
+[deps]
+NUMA_jll = "7f51dc2b-bb24-59f8-b771-bb1490e4195d"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
