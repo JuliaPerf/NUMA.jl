@@ -1,5 +1,7 @@
 module NUMA
 
+using DocStringExtensions
+
 include("utils.jl")
 include("libnuma.jl")
 include("julia.jl")
