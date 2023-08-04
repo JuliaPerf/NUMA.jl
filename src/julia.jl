@@ -2,9 +2,25 @@ function numa_free(arr::AbstractArray)
     numa_free(arr, sizeof(arr))
 end
 
-current_numa_node() = numa_node_of_cpu(sched_getcpu())
-
 current_cpu() = sched_getcpu()
+function current_cpus()
+    nt = Threads.nthreads()
+    cpuids = zeros(Int, nt)
+    Threads.@threads :static for i in 1:nt
+        cpuids[i] = current_cpu()
+    end
+    return cpuids
+end
+
+current_numa_node() = numa_node_of_cpu(current_cpu())
+function current_numa_nodes()
+    nt = Threads.nthreads()
+    numanodes = zeros(Int, nt)
+    Threads.@threads :static for i in 1:nt
+        numanodes[i] = current_numa_node()
+    end
+    return numanodes
+end
 
 nnumanodes() = numa_max_node()+1
 

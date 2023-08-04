@@ -15,6 +15,8 @@ end
 
 export current_numa_node,
        current_cpu,
+       current_numa_nodes,
+       current_cpus,
        numainfo,
        numa_isavailable,
        nnumanodes,
