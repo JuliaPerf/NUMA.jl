@@ -27,7 +27,7 @@ However, to get a more detailed overview it is highly recommended to use [Thread
 
 ### Allocating on specific NUMA node
 
-In the following example, we explicitly allocate arrays in specific NUMA nodes.
+In the following example, we explicitly allocate arrays in **specific NUMA nodes**.
 
 ```julia
 julia> using NUMA, Random
@@ -58,7 +58,9 @@ julia> which_numa_node(x)
 7
 ```
 
-We can also allocate on the local NUMA node, that is, the node closest to the CPU-thread/core we're currently running on.
+### Allocating on local NUMA node
+
+We can also allocate on the **local NUMA node**, that is, the node closest to the CPU-thread/core we're currently running on.
 
 ```julia
 julia> using NUMA, ThreadPinning, Random
