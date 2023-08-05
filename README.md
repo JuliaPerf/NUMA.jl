@@ -95,8 +95,11 @@ julia> current_cpus(), current_numa_nodes()
 julia> xs = Vector{Vector{Float64}}(undef, nthreads());
 
 julia> @threads :static for i in 1:nthreads()
-           xs[i] = Vector{Float64}(numalocal(), 123)
-           rand!(xs[i])
+           xs[i] = Vector{Float64}(numanode(current_numa_node()), 123) # For some reason, using `numalocal()` didn't work for me
+       end
+
+julia> @threads :static for i in 1:nthreads()
+           rand!(xs[mod1(i+1, nthreads())]) # writing to allocated memory from remote CPUs (other NUMA domains)
        end
 
 julia> which_numa_node.(xs) |> print
@@ -110,7 +113,7 @@ In the following example, parts of an array are (equally) distributed among all 
 ```julia
 julia> using NUMA, ThreadPinning, Base.Threads
 
-julia> pinthreads(:cores)
+julia> pinthreads(:numa)
 
 julia> x = Vector{Float64}(undef, 10^7);
 

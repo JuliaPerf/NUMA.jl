@@ -16,13 +16,14 @@ end
 
 function (::Type{ArrayType})(alloc::NUMANode, dims) where {T, ArrayType <: AbstractArray{T}}
     num_bytes = sizeof(T) * prod(dims)
-    ptr = Ptr{T}(numa_alloc_onnode(num_bytes, alloc.node))
+    ptr = Ptr{T}(LibNuma.numa_alloc_onnode(num_bytes, alloc.node))
     return wrap_numa(ArrayType, ptr, dims)
 end
 
 function (::Type{ArrayType})(alloc::NUMALocal, dims) where {T, ArrayType <: AbstractArray{T}}
     num_bytes = sizeof(T) * prod(dims)
-    ptr = Ptr{T}(numa_alloc_local(num_bytes))
+    ptr = Ptr{T}(LibNuma.numa_alloc_local(num_bytes))
+    # ptr = Ptr{T}(LibNuma.numa_alloc_onnode(num_bytes, current_numa_node()))
     return wrap_numa(ArrayType, ptr, dims)
 end
 

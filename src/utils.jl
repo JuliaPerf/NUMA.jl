@@ -19,3 +19,6 @@ function lineage_finalizer(f, x)
         end
     end
 end
+
+mask_to_bits(mask::UInt) = digits(mask; base=2)
+mask_to_string(mask::UInt) = join(digits(mask; base=2))

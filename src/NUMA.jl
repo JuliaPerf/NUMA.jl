@@ -2,9 +2,12 @@ module NUMA
 
 using DocStringExtensions
 
+include("LibNuma.jl")
+import .LibNuma
 include("utils.jl")
-include("libnuma.jl")
+include("julia_structs.jl")
 include("julia.jl")
+include("extra.jl")
 include("arrayalloc.jl")
 
 # exports
@@ -15,12 +18,15 @@ for name in names(@__MODULE__; all=true), prefix in PREFIXES
     end
 end
 
+# julia.jl (that doesn't start with "numa")
+# export numa_available
+
+# extra.jl + arrayalloc.jl
 export current_numa_node,
        current_cpu,
        current_numa_nodes,
        current_cpus,
        numainfo,
-       numa_isavailable,
        nnumanodes,
        ncpus,
        numanode,
