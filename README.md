@@ -1,6 +1,7 @@
 # NUMA.jl
 
-## Example: NUMA node allocation
+## Examples
+### Allocating on specific NUMA node
 
 In the following example, we explicitly allocate arrays in specific NUMA nodes.
 
@@ -58,7 +59,7 @@ julia> which_numa_node(x)
 2
 ```
 
-## Example: NUMA first-touch policy
+## NUMA first-touch policy
 
 In the following example, parts of an array are (equally) distributed among all 8 NUMA domains.
 
@@ -97,3 +98,7 @@ julia> which_numa_node(x, 7500000)
 julia> which_numa_node(x, 8750000)
 7
 ```
+
+## Acknowledgements
+
+* [ArrayAllocators.jl](https://github.com/mkitti/ArrayAllocators.jl) and specifically [NumaAllocators.jl](https://github.com/mkitti/ArrayAllocators.jl/tree/main/NumaAllocators) has served as an inspiration (and provides similar functionality).
