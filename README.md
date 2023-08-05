@@ -59,7 +59,7 @@ julia> which_numa_node(x)
 2
 ```
 
-## NUMA first-touch policy
+### NUMA first-touch policy
 
 In the following example, parts of an array are (equally) distributed among all 8 NUMA domains.
 
