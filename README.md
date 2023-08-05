@@ -80,6 +80,27 @@ julia> which_numa_node(x)
 2
 ```
 
+Demonstrating the same for multiple threads pinned to separate NUMA domains:
+
+```julia
+julia> using NUMA, ThreadPinning, Base.Threads, Random
+
+julia> pinthreads(:numa)
+
+julia> current_cpus(), current_numa_nodes()
+([0, 16, 32, 48, 64, 80, 96, 112], [0, 1, 2, 3, 4, 5, 6, 7])
+
+julia> xs = Vector{Vector{Float64}}(undef, nthreads());
+
+julia> @threads :static for i in 1:nthreads()
+           xs[i] = Vector{Float64}(numalocal(), 123)
+           rand!(xs[i])
+       end
+
+julia> which_numa_node.(xs) |> print
+Int32[0, 1, 2, 3, 4, 5, 6, 7]
+```
+
 ### NUMA first-touch policy
 
 In the following example, parts of an array are (equally) distributed among all 8 NUMA nodes, because different threads - pinned to cores in different NUMA domains via [ThreadPinning.jl](https://github.com/carstenbauer/ThreadPinning.jl) - perform the first touch, i.e. the first write operation.
