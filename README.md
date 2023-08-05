@@ -122,6 +122,7 @@ julia> which_numa_node(x, 8750000)
 
 ## Useful Resources
 
+* [NUMA (Non-Uniform Memory Access): An Overview](https://queue.acm.org/detail.cfm?id=2513149) (by Christoph Lameter)
 * [What is NUMA?](https://www.kernel.org/doc/html/v4.18/vm/numa.html) (from the linux kernel documentation)
 * [NUMA](https://hpc-wiki.info/hpc/NUMA) (from the HPC wiki)
 
