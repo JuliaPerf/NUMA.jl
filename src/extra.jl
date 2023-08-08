@@ -115,6 +115,6 @@ function which_numa_node(::Val{:get_mempolicy}, ptr::Ptr{T}) where {T}
         ptr_nothing = ptr
     end
     numa_node = Ref(Cint(-1))
-    LibNuma.get_mempolicy(numa_node, C_NULL, 0, ptr_nothing, MPOL_F_NODE | MPOL_F_ADDR)
+    LibNuma.get_mempolicy(numa_node, C_NULL, 0, ptr_nothing, LibNuma.MPOL_F_NODE | LibNuma.MPOL_F_ADDR)
     return numa_node[]
 end
