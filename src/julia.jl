@@ -1,47 +1,124 @@
-const WRAPPER_DIRECT = [
-    "numa_max_node", # zero-based index
-    "numa_preferred", # zero-based index
-    "numa_set_localalloc",
-    "numa_pagesize",
-    "numa_max_possible_node",
-    "numa_num_possible_nodes",
-    "numa_num_possible_cpus",
-    "numa_num_configured_nodes",
-    "numa_num_configured_cpus",
-    "numa_num_task_cpus",
-    "numa_num_thread_cpus",
-]
-for name in names(LibNuma; all=true)
-    if string(name) in WRAPPER_DIRECT
-        @eval $(name)() = LibNuma.$(name)()
-    end
-end
-
 # arity 0 functions
-const WRAPPER_RETURNS_BITMASK_ARITY0 = [
-    "numa_get_interleave_mask",
-    "numa_allocate_nodemask", # TODO: add finalizer?
-    "numa_allocate_cpumask", # TODO: add finalizer?
-    "numa_get_membind",
-    "numa_get_mems_allowed",
-    "numa_get_run_node_mask"
-]
-for name in names(LibNuma; all=true)
-    if string(name) in WRAPPER_RETURNS_BITMASK_ARITY0
-        expr = quote
-            function $(name)()
-                bmptr = LibNuma.$(name)()
-                return bitmaskptr_to_NUMABitmask(bmptr)
-            end
-        end
-        eval(expr)
-    end
-end
-
-numa_free(arr::AbstractArray) = LibNuma.numa_free(arr, sizeof(arr))
-
+"Highest node number available on the system"
+numa_max_node() = LibNuma.numa_max_node() + 1
+"Preferred NUMA node of the current task"
+numa_preferred() = LibNuma.numa_preferred() + 1
+"Sets the memory allocation policy for the calling task to local allocation"
+numa_set_localalloc() = LibNuma.numa_set_localalloc()
+"Returns the number of bytes in a page"
+numa_pagesize() = LibNuma.numa_pagesize()
+"Number of the highest possible node in a system"
+numa_max_possible_node() = LibNuma.numa_max_possible_node() + 1
+"""
+Returns the size of kernel's node mask, i.e. large enough to represent the maximum number of
+nodes that the kernel can handle
+"""
+numa_num_possible_nodes() = LibNuma.numa_num_possible_nodes()
+numa_num_possible_cpus() = LibNuma.numa_num_possible_cpus()
+numa_num_configured_nodes() = LibNuma.numa_num_configured_nodes()
+numa_num_configured_cpus() = LibNuma.numa_num_configured_cpus()
+numa_num_task_cpus() = LibNuma.numa_num_task_cpus()
+numa_num_thread_cpus() = LibNuma.numa_num_thread_cpus()
 "Is this a NUMA system?"
 numa_available() = LibNuma.numa_available() != -1
 
+numa_get_interleave_mask() = Bitmask(LibNuma.numa_get_interleave_mask())
+"""
+Returns a bitmask of a size equal to the kernel's node mask.
+In other words, large enough to represent all nodes.
+"""
+numa_allocate_nodemask() = Bitmask(LibNuma.numa_allocate_nodemask()) # TODO: finalizer?
+"""
+Returns a bitmask of a size equal to the kernel's cpu mask.
+In other words, large enough to represent all cpus.
+"""
+numa_allocate_cpumask() = Bitmask(LibNuma.numa_allocate_cpumask())  # TODO: finalizer?
+"Returns the mask of nodes from which memory can currently be allocated"
+numa_get_membind() = Bitmask(LibNuma.numa_get_membind())
+"""
+Returns the mask of nodes from which the process is allowed to allocate memory in it's
+current cpuset context
+"""
+numa_get_mems_allowed() = Bitmask(LibNuma.numa_get_mems_allowed())
+numa_get_run_node_mask() = Bitmask(LibNuma.numa_get_run_node_mask())
+
 # arity 1 functions
-numa_node_of_cpu(cpu=current_cpu()) = LibNuma.numa_node_of_cpu(cpu)
+"Returns the NUMA node that the cpu with the given id (starting at zero) belongs to."
+numa_node_of_cpu(cpuid::Integer=current_cpu()) = LibNuma.numa_node_of_cpu(cpuid) + 1
+
+"""
+Returns a named tuple holding the total memory and free memory of the given NUMA node.
+If no node index is provided as an argument, `current_numa_node()` is used.
+"""
+function numa_node_size(node::Integer=current_numa_node())
+    @boundscheck if node < 0 || node > nnumanodes()
+        throw(ArgumentError("Invalid NUMA node index. Must be >= 1 and <= $(nnumanodes())."))
+    end
+    freep = Ref(zero(Clonglong))
+    nodesize = LibNuma.numa_node_size(node - 1, freep)
+    if nodesize == -1 || freep[] == -1
+        throw(ErrorException("Couldn't query size of NUMA node (libnuma returned -1). Did you perhaps provide an illegal NUMA index?"))
+    end
+    return (memtot=nodesize, memfree=freep[])
+end
+
+"""
+Allocates a bitmask structure and its associated bit mask. The memory allocated for the bit
+mask contains enough words (type `UInt64`) to contain `n` bits.
+If `n` isn't provided, `nnumanodes()` is used.
+
+The bit mask is zero-filled.
+"""
+numa_bitmask_alloc(n::Integer=nnumanodes()) = Bitmask(LibNuma.numa_bitmask_alloc(n))
+
+"Set the `n`-th bit of the given `Bitmask`."
+function numa_bitmask_setbit!(bm::Bitmask, n::Integer)
+    @boundscheck if n > bm.size
+        throw(BoundsError(bm, n))
+    end
+    LibNuma.numa_bitmask_setbit(bm.ptr, n - 1)
+    return nothing
+end
+
+"Clear the `n`-th bit of the given `Bitmask`."
+function numa_bitmask_clearbit!(bm::Bitmask, n::Integer)
+    @boundscheck if n > bm.size
+        throw(BoundsError(bm, n))
+    end
+    LibNuma.numa_bitmask_clearbit(bm.ptr, n - 1)
+    return nothing
+end
+
+"Set all bits in the given `Bitmask` to zero."
+function numa_bitmask_clearall!(bm::Bitmask)
+    LibNuma.numa_bitmask_clearall(bm.ptr)
+    return nothing
+end
+
+"Set all bits in the given `Bitmask` to one."
+function numa_bitmask_setall!(bm::Bitmask)
+    LibNuma.numa_bitmask_setall(bm.ptr)
+    return nothing
+end
+
+"""
+Sets the memory allocation mask. The task will only allocate memory from the nodes set in
+the given nodemask. Passing an empty nodemask or a nodemask that contains nodes other than
+those in the mask returned by `numa_get_mems_allowed()` will result in an error.
+"""
+function numa_set_membind(bm::Bitmask)
+    LibNuma.numa_set_membind(bm.ptr)
+    return nothing
+end
+function numa_set_membind(nodes::AbstractVector{<:Integer})
+    @boundscheck if !all(n -> n > 0 && n <= nnumanodes(), nodes)
+        throw(ArgumentError("Invalid node number encountered."))
+    end
+    bm = numa_allocate_nodemask()
+    for n in nodes
+        bm[n] = 1
+    end
+    return numa_set_membind(bm)
+end
+
+numa_bitmask_free(bm::Bitmask) = LibNuma.numa_bitmask_free(bm.ptr)

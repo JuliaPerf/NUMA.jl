@@ -105,7 +105,7 @@ function which_numa_node(::Val{:move_pages}, ptr::Ptr{T}) where {T}
     if ret != 0
         error("Received non-zero return code, indicating failure.")
     end
-    return status[1]
+    return status[1] + 1
 end
 
 function which_numa_node(::Val{:get_mempolicy}, ptr::Ptr{T}) where {T}
@@ -116,5 +116,5 @@ function which_numa_node(::Val{:get_mempolicy}, ptr::Ptr{T}) where {T}
     end
     numa_node = Ref(Cint(-1))
     LibNuma.get_mempolicy(numa_node, C_NULL, 0, ptr_nothing, LibNuma.MPOL_F_NODE | LibNuma.MPOL_F_ADDR)
-    return numa_node[]
+    return numa_node[] + 1
 end

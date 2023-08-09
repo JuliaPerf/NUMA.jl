@@ -2,13 +2,13 @@ module NUMA
 
 using DocStringExtensions
 
-include("LibNuma.jl")
-import .LibNuma
 include("utils.jl")
-include("julia_structs.jl")
+include("LibNuma.jl")
+using .LibNuma
+include("julia_bitmask.jl")
 include("julia.jl")
-include("extra.jl")
-include("arrayalloc.jl")
+include("julia_extra.jl")
+include("julia_arrayalloc.jl")
 
 # exports
 const PREFIXES = ["numa", "MPOL_"]
@@ -17,9 +17,9 @@ for name in names(@__MODULE__; all=true), prefix in PREFIXES
         @eval export $name
     end
 end
+export Bitmask
 
 # julia.jl (that doesn't start with "numa")
-# export numa_available
 
 # extra.jl + arrayalloc.jl
 export current_numa_node,

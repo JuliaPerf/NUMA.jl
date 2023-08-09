@@ -16,7 +16,7 @@ end
 
 function (::Type{ArrayType})(alloc::NUMANode, dims) where {T, ArrayType <: AbstractArray{T}}
     num_bytes = sizeof(T) * prod(dims)
-    ptr = Ptr{T}(LibNuma.numa_alloc_onnode(num_bytes, alloc.node))
+    ptr = Ptr{T}(LibNuma.numa_alloc_onnode(num_bytes, alloc.node+1))
     return wrap_numa(ArrayType, ptr, dims)
 end
 
@@ -35,3 +35,5 @@ function wrap_numa(::Type{ArrayType}, ptr::Ptr{T}, dims) where {T, ArrayType <: 
     lineage_finalizer(numa_free, arr)
     return arr
 end
+
+numa_free(arr::AbstractArray) = LibNuma.numa_free(arr, sizeof(arr))
