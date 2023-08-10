@@ -25,7 +25,7 @@ jobs:
         experimental:
           - false
         include:
-          - version: 'nightly'
+          - version: '1.8'
             experimental: true
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
