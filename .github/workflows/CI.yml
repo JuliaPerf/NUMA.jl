@@ -24,6 +24,9 @@ jobs:
           - x64
         experimental:
           - false
+        include:
+          - version: 'nightly'
+            experimental: true
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
