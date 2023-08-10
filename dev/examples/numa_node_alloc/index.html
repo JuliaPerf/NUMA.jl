@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Allocate on NUMA nodes · NUMA.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">NUMA.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">NUMA</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../querying/">Querying NUMA properties</a></li><li class="is-active"><a class="tocitem" href>Allocate on NUMA nodes</a><ul class="internal"><li><a class="tocitem" href="#Specific-node(s)"><span>Specific node(s)</span></a></li><li><a class="tocitem" href="#Local-node(s)"><span>Local node(s)</span></a></li></ul></li><li><a class="tocitem" href="../numa_first_touch/">First-touch policy</a></li></ul></li><li><span class="tocitem">References</span><ul><li><a class="tocitem" href="../../refs/api/">API</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Allocate on NUMA nodes</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Allocate on NUMA nodes</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaPerf/NUMA.jl/blob/main/docs/src/examples/numa_node_alloc.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Example:-Allocate-on-NUMA-nodes"><a class="docs-heading-anchor" href="#Example:-Allocate-on-NUMA-nodes">Example: Allocate on NUMA nodes</a><a id="Example:-Allocate-on-NUMA-nodes-1"></a><a class="docs-heading-anchor-permalink" href="#Example:-Allocate-on-NUMA-nodes" title="Permalink"></a></h1><h2 id="Specific-node(s)"><a class="docs-heading-anchor" href="#Specific-node(s)">Specific node(s)</a><a id="Specific-node(s)-1"></a><a class="docs-heading-anchor-permalink" href="#Specific-node(s)" title="Permalink"></a></h2><p>In the following example, we explicitly allocate an array on a <strong>specific NUMA node</strong>.</p><pre><code class="language-julia hljs">julia&gt; using NUMA, Random
+
+julia&gt; x = Vector{Float64}(numanode(3), 10); rand!(x);
+
+julia&gt; which_numa_node(x)
+3</code></pre><p>Below we demonstrate the same for a bunch of arrays:</p><pre><code class="language-julia hljs"># Run with as many threads as there are NUMA domains, e.g.:
+#   julia --project -t 8 numa_node_alloc.jl [power]
+using NUMA
+using ThreadPinning
+using Base.Threads
+using Random
+
+pinthreads(:random) # to demonstrate that the pinning is irrelevant
+
+N = length(ARGS) != 0 ? 10^(parse(Int, first(ARGS))) : 10^7 # optional cmdline arg
+
+xs = Vector{Vector{Float64}}(undef, nthreads());
+
+targets = 1:nnumanodes()
+for i in 1:nthreads()
+    xs[i] = Vector{Float64}(numanode(targets[i]), N)
+end
+
+first_touch_from = current_numa_nodes()
+@threads :static for i in 1:nthreads()
+    rand!(xs[i])
+end
+
+println(&quot;Size of each array: &quot;, Base.format_bytes(sizeof(Float64) * N))
+println(&quot;Requested memory for arrays from nodes:\t&quot;, collect(targets))
+println(&quot;Filled the arrays from (random) nodes:\t&quot;, first_touch_from)
+println(&quot;Queried locations of memory pages:\t&quot;, which_numa_node.(xs))</code></pre><pre><code class="nohighlight hljs">$ julia --project -t 8 numa_node_alloc.jl
+Size of each array: 76.294 MiB
+Requested memory for arrays from nodes: [1, 2, 3, 4, 5, 6, 7, 8]
+Filled the arrays from (random) nodes:  [7, 2, 8, 6, 3, 6, 1, 1]
+Queried locations of memory pages:      [1, 2, 3, 4, 5, 6, 7, 8]</code></pre><h2 id="Local-node(s)"><a class="docs-heading-anchor" href="#Local-node(s)">Local node(s)</a><a id="Local-node(s)-1"></a><a class="docs-heading-anchor-permalink" href="#Local-node(s)" title="Permalink"></a></h2><p>We can also allocate on the <strong>local NUMA node</strong>, that is, the node closest to the CPU-thread/core we&#39;re currently running on.</p><pre><code class="language-julia hljs">julia&gt; using NUMA, ThreadPinning, Random
+
+julia&gt; numa_node_of_cpu(32)
+2
+
+julia&gt; pinthread(32);
+
+julia&gt; current_cpu()
+32
+
+julia&gt; current_numa_node()
+2
+
+julia&gt; x = Vector{Float64}(numalocal(), 10); rand!(x);
+
+julia&gt; which_numa_node(x)
+2</code></pre><p>Demonstrating the same for multiple threads pinned to separate NUMA domains (in random order):</p><pre><code class="language-julia hljs"># Run with as many threads as there are NUMA domains, e.g.:
+#   julia --project -t 8 numa_node_alloc_local.jl [power]
+using NUMA
+using ThreadPinning
+using Base.Threads
+using Random
+
+@assert nthreads() == nnumanodes()
+
+# pin each thread to a random NUMA domain but each to a different one
+pinthreads(shuffle!(first.(cpuids_per_numa())))
+
+N = length(ARGS) != 0 ? 10^(parse(Int, first(ARGS))) : 10^7 # optional cmdline arg
+
+xs = Vector{Vector{Float64}}(undef, nthreads());
+
+@threads :static for i in 1:nthreads()
+    xs[i] = Vector{Float64}(numanode(current_numa_node()), N) # works
+    # xs[i] = Vector{Float64}(numalocal(), N) # doesn&#39;t quite work?!
+end
+
+first_touch_from = shuffle(current_numa_nodes()) # randomize
+@threads :static for i in 1:nthreads()
+    rand!(xs[first_touch_from[i]])
+end
+
+println(&quot;Size of each array: &quot;, Base.format_bytes(sizeof(Float64) * N))
+println(&quot;Requested memory for arrays from nodes:\t&quot;, current_numa_nodes())
+println(&quot;Filled the arrays from (random) nodes:\t&quot;, first_touch_from)
+println(&quot;Queried locations of memory pages:\t&quot;, which_numa_node.(xs))</code></pre><pre><code class="nohighlight hljs">$ julia --project -t 8 numa_node_alloc_local.jl
+Size of each array: 76.294 MiB
+Requested memory for arrays from nodes: [1, 3, 5, 8, 7, 6, 2, 4]
+Filled the arrays from (random) nodes:  [8, 5, 7, 6, 1, 3, 2, 4]
+Queried locations of memory pages:      [1, 3, 5, 8, 7, 6, 2, 4]</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../querying/">« Querying NUMA properties</a><a class="docs-footer-nextpage" href="../numa_first_touch/">First-touch policy »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 10 August 2023 12:32">Thursday 10 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
