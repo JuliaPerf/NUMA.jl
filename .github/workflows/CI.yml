@@ -17,13 +17,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [1.9]
-        os: [ubuntu-latest]
-        arch: [x64]
-        experimental: [false]
-        include:
-          - version: nightly
-            experimental: true    
+        version:
+          - '1.9'
+        os:
+          - ubuntu-latest
+        arch:
+          - x64
+        # include:
+        #   - version: nightly
+        #     experimental: true    
     steps:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
