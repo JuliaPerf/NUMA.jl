@@ -3,9 +3,19 @@ abstract type NUMAAlloc end
 struct NUMANode <: NUMAAlloc
     node::Int
 end
-numanode(i) = NUMANode(i)
+"""
+$(TYPEDSIGNATURES)
+Returns an array initializer that represents a specific NUMA node.
+To be used as, e.g., `Vector{Float64}(numanode(1), 1024)`.
+"""
+numanode(i::Integer) = NUMANode(i)
 
 struct NUMALocal <: NUMAAlloc end
+"""
+$(TYPEDSIGNATURES)
+Returns an array initializer that represents the local NUMA node.
+To be used as, e.g., `Vector{Float64}(numalocal(), 1024)`.
+"""
 numalocal() = NUMALocal()
 
 
@@ -16,7 +26,7 @@ end
 
 function (::Type{ArrayType})(alloc::NUMANode, dims) where {T, ArrayType <: AbstractArray{T}}
     num_bytes = sizeof(T) * prod(dims)
-    ptr = Ptr{T}(LibNuma.numa_alloc_onnode(num_bytes, alloc.node+1))
+    ptr = Ptr{T}(LibNuma.numa_alloc_onnode(num_bytes, alloc.node-1))
     return wrap_numa(ArrayType, ptr, dims)
 end
 

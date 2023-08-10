@@ -10,10 +10,17 @@ makedocs(;
          authors = "Carsten Bauer",
          modules = [NUMA],
          checkdocs = :exports,
+         doctest = false,
          pages = [
              "NUMA" => "index.md",
+             "Examples" => [
+                 "Querying NUMA properties" => "examples/querying.md",
+                 "Allocate on NUMA nodes" => "examples/numa_node_alloc.md",
+                 "First-touch policy" => "examples/numa_first_touch.md",
+             ],
              "References" => [
                  "API" => "refs/api.md",
+                #  "LibNuma" => "refs/libnuma.md",
              ],
          ],
          repo = "$src/blob/{commit}{path}#{line}",
