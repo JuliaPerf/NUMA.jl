@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-    tags: ['*']
+    tags: '*'
   pull_request:
 concurrency:
   # Skip intermediate builds: always.
@@ -23,9 +23,7 @@ jobs:
         experimental: [false]
         include:
           - version: nightly
-            experimental: true
-    continue-on-error: ${{ matrix.experimental }}
-          
+            experimental: true    
     steps:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
