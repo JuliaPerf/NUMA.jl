@@ -23,9 +23,9 @@ jobs:
           - ubuntu-latest
         arch:
           - x64
-        # include:
-        #   - version: nightly
-        #     experimental: true    
+        include:
+          - version: nightly
+            experimental: true    
     steps:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
