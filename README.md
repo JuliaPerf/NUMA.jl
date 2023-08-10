@@ -1,5 +1,37 @@
 # NUMA.jl
 
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://juliaperf.github.io/NUMA.jl/dev
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://juliaperf.github.io/NUMA.jl/stable
+
+[ci-img]: https://github.com/JuliaPerf/NUMA.jl/actions/workflows/CI.yml/badge.svg
+[ci-url]: https://github.com/JuliaPerf/NUMA.jl/actions/workflows/CI.yml
+
+[cov-img]: https://codecov.io/gh/JuliaPerf/NUMA.jl/branch/main/graph/badge.svg?token=Ze61CbGoO5
+[cov-url]: https://codecov.io/gh/JuliaPerf/NUMA.jl
+
+[lifecycle-img]: https://img.shields.io/badge/lifecycle-maturing-black.svg
+
+[code-style-img]: https://img.shields.io/badge/code%20style-blue-4495d1.svg
+[code-style-url]: https://github.com/invenia/BlueStyle
+
+<!--
+![Lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
+![Lifecycle](https://img.shields.io/badge/lifecycle-stable-green.svg)
+![Lifecycle](https://img.shields.io/badge/lifecycle-retired-orange.svg)
+![Lifecycle](https://img.shields.io/badge/lifecycle-archived-red.svg)
+![Lifecycle](https://img.shields.io/badge/lifecycle-dormant-blue.svg)
+![Lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
+-->
+
+*NUMA tools (from libnuma) for Julia*
+
+| **Documentation**                                                               | **Build Status**                                                                                |  **Quality**                                                                                |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][ci-img]][ci-url] [![][cov-img]][cov-url] | ![][lifecycle-img] |
+
 ## Examples
 
 ### First-things first: Get an overview of the system
