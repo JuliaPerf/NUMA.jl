@@ -62,4 +62,5 @@ For more information, please check out the [package documentation](https://julia
 
 ## Acknowledgements
 
+* NUMA.jl is an effort by the [Paderborn Center for Parallel Computing (PC²)](https://pc2.uni-paderborn.de).
 * [ArrayAllocators.jl](https://github.com/mkitti/ArrayAllocators.jl) and specifically [NumaAllocators.jl](https://github.com/mkitti/ArrayAllocators.jl/tree/main/NumaAllocators) has served as an inspiration (and provides similar functionality).
