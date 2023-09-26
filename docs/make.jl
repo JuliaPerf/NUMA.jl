@@ -25,7 +25,7 @@ makedocs(;
          ],
          repo = "$src/blob/{commit}{path}#{line}",
          # assets = ["assets/custom.css", "assets/custom.js"]
-        #  format = Documenter.HTML(; collapselevel = 1)
+         format = Documenter.HTML(repolink="$src")
 )
 
 if ci
