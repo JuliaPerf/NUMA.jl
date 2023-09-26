@@ -1,7 +1,7 @@
 name = "NUMA"
 uuid = "292f1341-b53f-425a-80e5-3597ad0961bf"
 authors = ["Carsten Bauer <carsten.bauer@uni-paderborn.de>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
